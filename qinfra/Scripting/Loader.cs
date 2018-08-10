@@ -19,6 +19,7 @@ namespace QInfra
         {
             var sb = new StringBuilder();
             sb.AppendLine("using System;");
+            sb.AppendLine("using static QInfra.FileSys;");
             sb.AppendLine("public class Program {");
             sb.AppendLine("public static void Main() {");
             sb.AppendLine(script);
@@ -36,8 +37,11 @@ namespace QInfra
             // System.Text
             // System.IO
 
-            var refs = AppDomain.CurrentDomain.GetAssemblies().Select(x=>x.Location).Distinct()
-                .Select(x=>MetadataReference.CreateFromFile(x));
+            var asmLocations = AppDomain.CurrentDomain.GetAssemblies().Select(x=>x.Location)
+                .Append(typeof(DirectoryInfo).GetTypeInfo().Assembly.Location)
+                .Distinct();
+
+            var refs = asmLocations.Select(x=>MetadataReference.CreateFromFile(x));
 
             var compilation = CSharpCompilation.Create("output")
                 .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
@@ -67,3 +71,4 @@ namespace QInfra
         }
     }
 }
+
